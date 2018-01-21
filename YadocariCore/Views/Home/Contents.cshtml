@@ -1,0 +1,71 @@
+﻿@using YadocariCore.Models
+@model IEnumerable<YadocariCore.Controllers.HomeController.Content>
+
+@{
+    ViewBag.Title = "資料一覧";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@ViewBag.Title</h2>
+<table class="table table-striped">
+    <tr>
+        @if (User.IsInRole(nameof(Role.Administrator)))
+        {
+            <th nowrap="nowrap" class="col-xs-1 col-ms-1 col-md-1 col-lg-1">ID</th>}
+        <th nowrap="nowrap">タイトル</th>
+        @if (Model.Any() && Model.First().Count != -1)
+        {
+            <th nowrap="nowrap">件数</th>}
+        else
+        {
+            <th nowrap="nowrap">PDF</th>
+            <th nowrap="nowrap">DL数</th>
+            <th nowrap="nowrap" style="text-align: center">スライド</th>}
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            @if (User.IsInRole(nameof(Role.Administrator)))
+            {
+                <td style="vertical-align: middle">
+                    @if (item.Id != -1)
+                    {@item.Id
+                    }
+                </td>}
+            @if (item.Count != -1)
+            {
+                <td style="vertical-align: middle">@Html.ActionLink(item.Title, "Contents", new { item.Id })</td>
+                <td style="vertical-align: middle">@item.Count</td>}
+            else
+            {
+                <td style="vertical-align: middle"><a href="https://ipsj.ixsq.nii.ac.jp/ej/?action=repository_uri&item_id=@item.Id">@Html.Raw(item.Title)</a></td>
+                <td style="vertical-align: middle"><a href="https://ipsj.ixsq.nii.ac.jp/ej/?action=repository_uri&item_id=@item.Id&file_id=1&file_no=1">PDF</a></td>
+                <td style="vertical-align: middle">@item.DownloadCount</td>
+                <td style="vertical-align: middle" nowrap="nowrap">
+                    @if (item.Uploaded)
+                    {
+                        @Html.ActionLink("スライド", "ShowDocument", new { item.FileId }, new { @class = "btn btn-info", target = "_brank" })
+                        if (User.IsInRole(nameof(Role.Administrator)))
+                        {
+                            @*@Html.ActionLink("関連付け変更", "ChangeAssosiation", new { item.FileId }, new { @class = "btn btn-success", target = "_brank" })*@
+                            using (Html.BeginForm("DeleteDocument", "Home", FormMethod.Post, new { style = "display: inline-block" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <div>
+                                    @Html.Hidden("fileId", item.FileId)
+                                    <input type="submit" class="btn btn-danger" value="削除" title="このスライドを削除します" onclick='return confirm("この操作は取り消せません．本当によろしいですか？");' />
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (User.IsInRole(nameof(Role.Administrator)))
+                        {
+                            @Html.ActionLink("追加", "AddFile", new { item.Id }, new { @class = "btn btn-success", target = "_brank" })
+                        }
+                    }
+                </td>}
+        </tr>
+    }
+</table>

@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using YadocariCore.Models
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    {
+        <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm" class="navbar-right">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    @if (User.IsInRole(nameof(Role.Administrator)))
+                    {
+                        <a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">こんにちは、@UserManager.GetUserName(User)さん</a>
+                    }
+                    else
+                    {
+                        <a>こんにちは、@UserManager.GetUserName(User)さん</a>
+                    }
+                </li>
+                <li>
+                    <button type="submit" class="btn btn-link navbar-btn navbar-link">ログオフ</button>
+                </li>
+            </ul>
+        </form>
+    }
+}
+else
+{
+    <ul class="nav navbar-nav navbar-right">
+        <li>@Html.ActionLink("ログイン", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    </ul>
+}

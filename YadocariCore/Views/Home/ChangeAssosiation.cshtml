@@ -1,0 +1,36 @@
+﻿@model YadocariCore.Models.ChangeAssosiationViewModel
+@{
+    ViewBag.Title = "関連付けの変更";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm("ChangeAssosiationResult", "Home", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <h4>関連付け変更フォーム</h4>
+    <hr />
+    @Html.ValidationSummary("", new { @class = "text-danger" })
+    @Html.HiddenFor(m => m.CurrentId, Model.CurrentId)
+    @Html.HiddenFor(m => m.FileId, Model.FileId)
+    <div class="form-group">
+        <label class="col-md-2 control-label">題名</label>
+        <div class="col-md-10">
+            @ViewBag.Title
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.NewId, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.NewId, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="確定" class="btn btn-default" />
+        </div>
+    </div>
+}
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

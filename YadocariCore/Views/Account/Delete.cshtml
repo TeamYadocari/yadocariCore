@@ -1,0 +1,14 @@
+﻿@model bool
+@{
+    ViewBag.Title = "ユーザーの削除";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3>アカウントの削除に@(Model ? @Html.Raw("成功") : @Html.Raw("失敗"))しました。</h3>
+
+<a asp-action="ManageUsers" asp-controller="Manage">ユーザ管理</a>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

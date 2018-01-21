@@ -1,0 +1,72 @@
+﻿@model List<YadocariCore.Controllers.ManageController.MicrosoftAccount>
+
+@{
+	ViewBag.Title = "Microsoftアカウントの管理";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p class="text-success">@ViewBag.StatusMessage</p>
+@if (Model.Any())
+{
+	<h4>登録済みアカウント</h4>
+	<h5 class="text-danger">
+		※Microsoftアカウントの削除には細心の注意を払ってください。<br />
+		これは、削除したアカウントに保存されている資料がシステム上から削除されることを意味します。
+	</h5>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>アカウント名</th>
+				<th>空き容量</th>
+				<th>使用中</th>
+				<th>削除</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var account in Model)
+			{
+				<tr>
+					<td>@account.Name</td>
+					<td>@account.FreeSpace</td>
+					<td>
+						@if (account.Using)
+						{
+							<span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+						}
+						else
+						{
+							using (Html.BeginForm("ChangeUsingMicrosoftAccount", "Manage"))
+							{
+								@Html.AntiForgeryToken()
+								<div>
+									@Html.Hidden("id", account.Id)
+									<input type="submit" class="btn btn-success" value="変更" title="使用するMicrosoftアカウントを変更します" />
+								</div>
+							}
+						}
+					</td>
+					<td>
+						@if (!account.Using)
+						{
+							using (Html.BeginForm("DeleteMicrosoftAccount", "Manage"))
+							{
+								@Html.AntiForgeryToken()
+								<div>
+									@Html.Hidden("id", account.Id)
+									<input type="submit" class="btn btn-danger" value="削除" title="Microsoftアカウントを削除します"  onclick='return confirm("この操作は取り消せません．本当によろしいですか？");'  />
+								</div>
+							}
+						}
+						else
+						{
+							<div class="text-danger">使用中</div>
+						}
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+<h4>新規アカウント</h4>
+@Html.ActionLink("新規Microsoftアカウントを追加する", "AddMicrosoftAccount", "Manage", null, new { @class = "btn btn-default" })

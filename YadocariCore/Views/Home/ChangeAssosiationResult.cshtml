@@ -1,0 +1,12 @@
+﻿@model bool?
+@{
+	ViewBag.Title = "関連付けの変更";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3>関連付けの変更に@((bool)Model ? Html.Raw("成功") : Html.Raw("失敗"))しました。</h3>
+
+@section Scripts {
+	@await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -1,0 +1,11 @@
+﻿@model bool
+@{
+    ViewBag.Title = "ユーザーの編集";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3>ユーザの編集に@(Model ? @Html.Raw("成功") : @Html.Raw("失敗"))しました。</h3>
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

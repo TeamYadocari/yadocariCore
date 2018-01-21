@@ -1,0 +1,29 @@
+﻿@{
+    ViewBag.Title = "情報処理学会発表資料アーカイブシステム";
+}
+
+<div class="jumbotron">
+    <h1>情報処理学会のための<br />発表資料アーカイブシステム</h1>
+    <p class="lead">
+        このサイトは情報処理学会研究発表会のための発表資料アーカイブシステムです．<br />
+        ※現在対応しているのはIOT研究会のみです．
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-md-4 well">
+        <h2>資料一覧</h2>
+        <p>情報処理学会の電子図書館「情報学広場」に登録されている文献に対する発表資料を閲覧することができます．</p>
+        <p>@Html.ActionLink("資料一覧", "Contents", null, null, new { @class = "btn btn-default" })</p>
+    </div>
+    <div class="col-md-4 well">
+        <h2>シンポジウム<br />資料一覧</h2>
+        <p>情報処理学会の電子図書館「情報学広場」に登録されている「インターネットと運用技術シンポジウム」の文献に対する発表資料を閲覧することができます．</p>
+        <p>@Html.ActionLink("資料一覧", "Contents", new { id = "6244" }, new { @class = "btn btn-default" })</p>
+    </div>
+    <div class="col-md-4 well">
+        <h2>未登録資料一覧</h2>
+        <p>情報処理学会の電子図書館「情報学広場」に登録されていない（もしくはまだ関連付けられていない）文献に対する発表資料を閲覧することができます．</p>
+        <p>@Html.ActionLink("未登録資料一覧", "UnregisteredContents", null, null, new { @class = "btn btn-default" })</p>
+    </div>
+</div>

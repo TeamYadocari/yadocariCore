@@ -1,0 +1,92 @@
+﻿@model ValueTuple<List<ApplicationUser>, List<ApplicationUser>>
+
+@{
+    ViewBag.Title = "アカウントの追加";
+    Dictionary<int, string> titleDict = ViewBag.TitleDict;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h4>追加ユーザー</h4>
+<h5>発表申込完了メールより次のユーザーを追加しました</h5>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ユーザー名</th>
+            <th>発表題目</th>
+            <th>編集</th>
+            <th>削除</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Item1)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td>@titleDict[user.FileId]</td>
+                <td>
+                    @using (Html.BeginForm("EditUser", "Manage"))
+                {
+                        @Html.AntiForgeryToken()
+                        <div>
+                            @Html.Hidden("Id", user.Id)
+                            <input type="submit" class="btn btn-default" value="編集" title="@user.UserName を編集します" />
+                        </div>
+                    }
+                </td>
+                <td>
+                    @using (Html.BeginForm("Delete", "Account"))
+                {
+                        @Html.AntiForgeryToken()
+                        <div>
+                            @Html.Hidden("userName", user.UserName)
+                            <input type="submit" class="btn btn-default" value="削除" title="@user.UserName を削除します" onclick='return confirm("この操作は取り消せません．本当によろしいですか？");' />
+                        </div>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>発表題目変更ユーザー</h4>
+<h5>更新連絡メールに基づき次のユーザーの発表題目を変更しました</h5>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ユーザー名</th>
+            <th>発表題目</th>
+            <th>編集</th>
+            <th>削除</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Item2)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td>@titleDict[user.FileId]</td>
+                <td>
+                    @using (Html.BeginForm("EditUser", "Manage"))
+                {
+                        @Html.AntiForgeryToken()
+                        <div>
+                            @Html.Hidden("Id", user.Id)
+                            <input type="submit" class="btn btn-default" value="編集" title="@user.UserName を編集します" />
+                        </div>
+                    }
+                </td>
+                <td>
+                    @using (Html.BeginForm("Delete", "Account"))
+                {
+                        @Html.AntiForgeryToken()
+                        <div>
+                            @Html.Hidden("userName", user.UserName)
+                            <input type="submit" class="btn btn-default" value="削除" title="@user.UserName を削除します" onclick='return confirm("この操作は取り消せません．本当によろしいですか？");' />
+                        </div>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

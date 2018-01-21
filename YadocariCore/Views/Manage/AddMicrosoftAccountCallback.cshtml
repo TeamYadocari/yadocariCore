@@ -1,0 +1,18 @@
+﻿@{
+	ViewBag.Title = "Microsoftアカウントの追加";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h4>Microsoftアカウントの追加</h4>
+@if (ViewBag.Success)
+{
+	<h5>Microsoftアカウントの追加に成功しました。</h5>
+}
+else
+{
+	<h5>
+		Microsoftアカウントの追加に失敗しました。<br />
+		TIPS: このユーザーは既に追加されている可能性があります。
+	</h5>
+}

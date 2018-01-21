@@ -1,0 +1,43 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Add File";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@ViewBag.Title</h2>
+@if (ViewBag.AlreadyExisting)
+{
+    @Html.Raw($"資料「{ViewBag.FileName}」に対する発表資料は既に存在します。")
+    <br />
+    @Html.Raw($"置き換える場合は削除してからアップロードし直してください。")
+    <br />
+    @Html.ActionLink("現在の資料を見る", "ShowDocument", new { ViewBag.fileId }, new { @class = "btn btn-info", target = "_brank" })
+    using (Html.BeginForm("DeleteDocument", "Home"))
+    {
+        @Html.AntiForgeryToken()
+        <div>
+            @Html.Hidden("fileId", (int)ViewBag.fileId)
+            <input type="submit" class="btn btn-danger" value="現在の発表資料を削除する" title="現在の発表資料を削除します" onclick='return confirm("この操作は取り消せません．本当によろしいですか？");' />
+        </div>
+    }
+}
+else if (ViewBag.FileName != "")
+{
+    @Html.Raw($"資料「{ViewBag.FileName}」に対して追加する発表資料をアップロードしてください。")
+}
+else
+{
+    @Html.Raw("この資料に追加する発表資料をアップロードしてください。")
+}
+
+@if (!ViewBag.AlreadyExisting)
+{
+    using (Html.BeginForm("Upload", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("fileId", (int)ViewBag.fileId)
+        <input type="file" name="file" />
+        <input type="submit" name="Submit" id="Submit" value="Upload" />
+    }
+}

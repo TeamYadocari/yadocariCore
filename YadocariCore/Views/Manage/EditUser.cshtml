@@ -1,0 +1,53 @@
+﻿@model YadocariCore.Models.EditUserViewModel
+@{
+	ViewBag.Title = "ユーザーの編集";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm("EditUserResult", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+	@Html.AntiForgeryToken()
+	<h4>ユーザー編集フォーム</h4>
+	<hr />
+	@Html.ValidationSummary("", new { @class = "text-danger" })
+	@Html.HiddenFor(m => m.CurrentUserName, Model.CurrentUserName)
+	<div class="form-group">
+		@Html.LabelFor(m => m.UserName, new { @class = "col-md-2 control-label" })
+		<div class="col-md-10">
+			@Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.Roles, new { @class = "col-md-2 control-label" })
+		<div class="col-md-10">
+			@Html.DropDownListFor(m => m.Role, Model.Roles, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.Title, new { @class = "col-md-2 control-label" })
+		<div class="col-md-10">
+			@Html.TextBoxFor(m => m.Title, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.NewPassword, new { @class = "col-md-2 control-label" })
+		<div class="col-md-10">
+			@Html.PasswordFor(m => m.NewPassword, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
+		<div class="col-md-10">
+			@Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-md-offset-2 col-md-10">
+			<input type="submit" value="確定" class="btn btn-default" />
+		</div>
+	</div>
+}
+@section Scripts {
+	@await Html.PartialAsync("_ValidationScriptsPartial")
+}

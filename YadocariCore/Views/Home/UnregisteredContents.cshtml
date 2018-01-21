@@ -1,0 +1,37 @@
+﻿@using YadocariCore.Models
+@model IEnumerable<YadocariCore.Controllers.HomeController.UnregisteredContent>
+
+@{
+    ViewBag.Title = "未登録資料一覧";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@ViewBag.Title</h2>
+<table class="table table-striped">
+    <tr>
+        <th nowrap="nowrap">タイトル</th>
+        <th nowrap="nowrap">DL数</th>
+        <th nowrap="nowrap" style="text-align: center">スライド</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td style="vertical-align: middle"><a>@item.Title</a></td>
+            <td style="vertical-align: middle">@item.DownloadCount</td>
+            <td style="vertical-align: middle" nowrap="nowrap">
+                @Html.ActionLink("スライド", "ShowDocument", new { item.FileId }, new { @class = "btn btn-info", target = "_brank" })
+                @if (User.IsInRole(nameof(Role.Administrator)))
+                {
+                    using (Html.BeginForm("DeleteDocument", "Home", FormMethod.Post, new { style = "display: inline-block" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div>
+                            @Html.Hidden("fileId", item.FileId)
+                            <input type="submit" class="btn btn-danger" value="削除" title="このスライドを削除します" onclick='return confirm("この操作は取り消せません．本当によろしいですか？");' />
+                        </div>
+                    }
+                }
+            </td>
+        </tr>
+    }
+</table>

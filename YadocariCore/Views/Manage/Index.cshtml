@@ -1,0 +1,53 @@
+﻿@model YadocariCore.Models.IndexViewModel
+@{
+    ViewBag.Title = "管理";
+}
+
+<h2>@ViewBag.Title.</h2>
+
+<p class="text-success">@ViewBag.StatusMessage</p>
+<div>
+    <h4>システム設定の変更</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>設定:</dt>
+        <dd>
+            @*[@Html.ActionLink("管理", "SystemConfig")]*@
+            [管理]
+        </dd>
+        <dt>メール:</dt>
+        <dd>
+            @*[@Html.ActionLink("管理", "MailConfig")]*@
+            [管理]
+        </dd>
+        <dd style="color: red">※設定変更はappsettings.jsonファイルに対して行ってください</dd>
+    </dl>
+
+    <hr />
+    <h4>アカウント設定の変更</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>パスワード:</dt>
+        <dd>
+            [@Html.ActionLink("パスワードの変更", "ChangePassword")]
+        </dd>
+        <dt>ユーザー:</dt>
+        <dd>
+            @Model.Users.Count [@Html.ActionLink("管理", "ManageUsers")]
+        </dd>
+        <dt>Microsoftアカウント:</dt>
+        <dd>
+            @Model.MSAccounts.Count [@Html.ActionLink("管理", "ManageMicrosoftAccounts")]
+        </dd>
+    </dl>
+
+    <hr />
+    <h4>登録済み資料の管理</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>資料:</dt>
+        <dd>
+            [@Html.ActionLink("管理", "ManageFiles")]
+        </dd>
+    </dl>
+</div>

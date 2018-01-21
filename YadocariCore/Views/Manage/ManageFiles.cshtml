@@ -1,0 +1,44 @@
+﻿@model File[]
+@{
+    ViewBag.Title = "資料の管理";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p class="text-success">@ViewBag.StatusMessage</p>
+<h4>登録済み資料</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>電子図書館上のID</th>
+            <th>名前</th>
+            <th>ダウンロード数</th>
+            <th>MSアカウント</th>
+            @*<th>関連付け変更</th>*@
+            <th>削除</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var file in Model)
+            {
+            <tr>
+                <td>@file.DocumentId</td>
+                <td>@file.DocumentName</td>
+                <td>@file.DownloadCount</td>
+                <td>@DbContext.Accounts.Find(file.MicrosoftAccountId).Name</td>
+                @*<td>
+                    @Html.ActionLink("関連付け変更", "ChangeAssosiation", "Home", new { fileId = file.Id }, new { @class = "btn btn-info" })
+                </td>*@
+                <td>
+                    @using (Html.BeginForm("DeleteDocument", "Home"))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div>
+                            @Html.Hidden("fileId", file.Id)
+                            <input type="submit" class="btn btn-danger" value="削除" title="ファイルを削除します" onclick='return confirm("この操作は取り消せません．本当によろしいですか？");' />
+                        </div>
+                    }
+                </td>
+            </tr>}
+    </tbody>
+</table>

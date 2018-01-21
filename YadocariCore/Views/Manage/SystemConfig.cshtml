@@ -1,0 +1,57 @@
+﻿@model YadocariCore.Models.SystemConfigViewModel
+
+@{
+    ViewBag.Title = "システム設定";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm("SystemConfigResult", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <h4>システム設定編集フォーム</h4>
+    <hr />
+    @Html.ValidationSummary("", new { @class = "text-danger" })
+    <div class="form-group">
+        @Html.LabelFor(m => m.ServerUrl, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.ServerUrl, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.LinkEnableDuration, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.LinkEnableDuration, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.CacheDuration, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.CacheDuration, new { @class = "form-control" })
+        </div>
+    </div>
+    <h5>OneDrive関連</h5>
+    <div class="form-group">
+        @Html.LabelFor(m => m.EnableAccountAutoChange, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.CheckBoxFor(m => m.EnableAccountAutoChange, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.ChangeThreshold, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.ChangeThreshold, new { @class = "form-control" })
+        </div>
+    </div>
+    <span class="text-warning">※OneDriveアカウントの自動切り替えには，指定した以上の空き容量を持つMicrosoftアカウントが登録されている必要があります．</span><br />
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="確定" class="btn btn-default" />
+        </div>
+    </div>
+}
+@section Scripts {
+    @{
+        Html.RenderPartial("_ValidationScriptsPartial");
+    }
+}
