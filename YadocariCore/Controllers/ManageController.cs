@@ -235,7 +235,7 @@ namespace YadocariCore.Controllers
                 }
 
                 var fileId = UtilService.GetOrCreateFileByTitle(_dbContext, title);
-                titleDict.Add(fileId, title);
+                titleDict.TryAdd(fileId, title);
 
                 var user = new ApplicationUser { UserName = id, FileId = fileId };
                 var result = await _userManager.CreateAsync(user, password);
@@ -273,7 +273,7 @@ namespace YadocariCore.Controllers
                 var file = _dbContext.Files.Find(user.FileId);
                 file.DocumentName = title;
                 _dbContext.SaveChanges();
-                titleDict.Add(user.FileId, title);
+                titleDict.TryAdd(user.FileId, title);
 
                 titleChangedUsers.Add(user);
             }
@@ -368,13 +368,14 @@ namespace YadocariCore.Controllers
         // GET: /Manage/AddMicrosoftAccountCallback
         public async Task<ActionResult> AddMicrosoftAccountCallback(string code)
         {
-            var refreshToken = await _oneDriveService.GetRefreshTokenAsync(code, _config.ServerUrl);
-            var info = await _oneDriveService.GetOwnerInfoByTokenAsync(refreshToken);
+            var token = await _oneDriveService.GetTokenByCodeAsync(code, _config.ServerUrl);
+
+            var info = await _oneDriveService.GetOwnerInfoByAccessTokenAsync(token.accessToken);
 
             if (_dbContext.Accounts.Any(x => x.OneDriveId == info.Id))
             {
                 //Update token
-                _dbContext.Accounts.First(x => x.OneDriveId == info.Id).RefleshToken = refreshToken;
+                _dbContext.Accounts.First(x => x.OneDriveId == info.Id).RefleshToken = token.refreshToken;
                 _dbContext.SaveChanges();
             }
             else
@@ -383,7 +384,7 @@ namespace YadocariCore.Controllers
                 {
                     Name = info.DisplayName,
                     OneDriveId = info.Id,
-                    RefleshToken = refreshToken
+                    RefleshToken = token.refreshToken
                 });
                 _dbContext.SaveChanges();
 
@@ -419,28 +420,28 @@ namespace YadocariCore.Controllers
             return $"{len:0.##} {sizes[order]}";
         }
 
-        public async Task<ActionResult> ManageMicrosoftAccounts()
+        public ActionResult ManageMicrosoftAccounts()
         {
-            var model = await Task.WhenAll(_dbContext.Accounts.ToArray().Select(async x =>
+            var model = _dbContext.Accounts.ToArray().Select(x =>
+            {
+                string freeSpace;
+                try
                 {
-                    string freeSpace;
-                    try
-                    {
-                        var info = await _oneDriveService.GetOwnerInfoAsync(x.Id);
-                        freeSpace = GetHumanReadableSize(info.FreeSpace);
-                    }
-                    catch
-                    {
-                        freeSpace = "トークン失効";
-                    }
-                    return new MicrosoftAccount
-                    {
-                        Id = x.Id,
-                        Name = x.Name,
-                        Using = _configService.GetConfiguration<int>("UsingMicrosoftAccountId") == x.Id,
-                        FreeSpace = freeSpace
-                    };
-                }));
+                    var info = _oneDriveService.GetOwnerInfoAsync(x.Id).Result;
+                    freeSpace = GetHumanReadableSize(info.FreeSpace);
+                }
+                catch
+                {
+                    freeSpace = "トークン失効";
+                }
+                return new MicrosoftAccount
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Using = _configService.GetConfiguration<int>("UsingMicrosoftAccountId") == x.Id,
+                    FreeSpace = freeSpace
+                };
+            }).ToArray();
 
             return View(model);
         }

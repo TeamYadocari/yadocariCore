@@ -52,7 +52,7 @@ namespace YadocariCore.Services
             public long FreeSpace { get; set; }
         }
 
-        public async Task<string> GetRefreshTokenAsync(string code, string serverUrl)
+        public async Task<(string refreshToken, string accessToken)> GetTokenByCodeAsync(string code, string serverUrl)
         {
             var url = "https://login.live.com/oauth20_token.srf";
             var hc = new HttpClient();
@@ -69,20 +69,20 @@ namespace YadocariCore.Services
             var response = await hc.PostAsync(url, param);
             var result = await response.Content.ReadAsStringAsync();
             var dynamicResult = JsonConvert.DeserializeObject<dynamic>(result);
-            return dynamicResult.refresh_token;
+            return (dynamicResult.refresh_token, dynamicResult.access_token);
         }
 
         public async Task<OwnerInfo> GetOwnerInfoAsync(int accountNum)
         {
             var token = await GetAccessTokenAsync(accountNum);
-            return await GetOwnerInfoByTokenAsync(token);
+            return await GetOwnerInfoByAccessTokenAsync(token);
         }
 
-        public async Task<OwnerInfo> GetOwnerInfoByTokenAsync(string token)
+        public async Task<OwnerInfo> GetOwnerInfoByAccessTokenAsync(string accessToken)
         {
             var url = ApiEndPoint + "/drive";
             var hc = new HttpClient();
-            hc.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+            hc.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
 
             var response = await hc.GetAsync(url);
             var result = await response.Content.ReadAsStringAsync();
