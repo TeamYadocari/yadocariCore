@@ -211,21 +211,28 @@ namespace YadocariCore.Controllers
             var addedUsers = new List<ApplicationUser>();
             var titleChangedUsers = new List<ApplicationUser>();
 
+            var r1 = new Regex(@"１．整理番号：(?<id>\d+)", RegexOptions.Compiled);
+            var r2 = new Regex(@"２．パスワード：(?<password>[a-zA-Z0-9]+)", RegexOptions.Compiled);
+            var r3 = new Regex(@"３．講演題名：(?<title>.+?)------------------------------------------------------------", RegexOptions.Singleline | RegexOptions.Compiled);
+
             foreach (var message in messages.Where(x => x.Subject.Contains("発表申込完了のお知らせ")))
             {
-                var body = (MultipartAlternative)message.Body;
-
-                var r = new Regex(@"１．整理番号：(?<id>\d+)");
-                if (!r.IsMatch(body.TextBody)) continue;
-                var id = r.Match(body.TextBody).Groups["id"].Value;
-
-                r = new Regex(@"２．パスワード：(?<password>[a-zA-Z0-9]+)");
-                if (!r.IsMatch(body.TextBody)) continue;
-                var password = r.Match(body.TextBody).Groups["password"].Value;
-
-                r = new Regex(@"３．講演題名：(?<title>.+?)------------------------------------------------------------", RegexOptions.Singleline);
-                if (!r.IsMatch(body.TextBody)) continue;
-                var title = r.Match(body.TextBody).Groups["title"].Value.Replace("\r", "").Replace("\n", "");
+                string id, password, title;
+                switch (message.Body)
+                {
+                    case MultipartAlternative body when r1.IsMatch(body.TextBody) && r2.IsMatch(body.TextBody) && r3.IsMatch(body.TextBody):
+                        id = r1.Match(body.TextBody).Groups["id"].Value;
+                        password = r2.Match(body.TextBody).Groups["password"].Value;
+                        title = r3.Match(body.TextBody).Groups["title"].Value.Replace("\r", "").Replace("\n", "");
+                        break;
+                    case TextPart body when r1.IsMatch(body.Text) && r2.IsMatch(body.Text) && r3.IsMatch(body.Text):
+                        id = r1.Match(body.Text).Groups["id"].Value;
+                        password = r2.Match(body.Text).Groups["password"].Value;
+                        title = r3.Match(body.Text).Groups["title"].Value.Replace("\r", "").Replace("\n", "");
+                        break;
+                    default:
+                        continue;
+                }
 
                 var fileId = UtilService.GetOrCreateFileByTitle(_dbContext, title);
                 titleDict.Add(fileId, title);
@@ -239,17 +246,26 @@ namespace YadocariCore.Controllers
                 }
             }
 
+            var r4 = new Regex(@"1．整理番号：(?<id>\d+)", RegexOptions.Compiled);
+            var r5 = new Regex(@"2．タイトル：(?<title>.+?)------------------------------------------------------------", RegexOptions.Singleline | RegexOptions.Compiled);
+
             foreach (var message in messages.Where(x => x.Subject.Contains("担当研究会申込者更新連絡のお知らせ")))
             {
-                var body = (MultipartAlternative)message.Body;
+                string id, title;
 
-                var r = new Regex(@"1．整理番号：(?<id>\d+)");
-                if (!r.IsMatch(body.TextBody)) continue;
-                var id = r.Match(body.TextBody).Groups["id"].Value;
-
-                r = new Regex(@"2．タイトル：(?<title>.+?)------------------------------------------------------------", RegexOptions.Singleline);
-                if (!r.IsMatch(body.TextBody)) continue;
-                var title = r.Match(body.TextBody).Groups["title"].Value.Replace("\r", "").Replace("\n", "");
+                switch (message.Body)
+                {
+                    case MultipartAlternative body when r4.IsMatch(body.TextBody) && r5.IsMatch(body.TextBody):
+                        id = r4.Match(body.TextBody).Groups["id"].Value;
+                        title = r5.Match(body.TextBody).Groups["title"].Value.Replace("\r", "").Replace("\n", "");
+                        break;
+                    case TextPart body when r4.IsMatch(body.Text) && r5.IsMatch(body.Text):
+                        id = r4.Match(body.Text).Groups["id"].Value;
+                        title = r5.Match(body.Text).Groups["title"].Value.Replace("\r", "").Replace("\n", "");
+                        break;
+                    default:
+                        continue;
+                }
 
                 var user = await _userManager.FindByNameAsync(id);
                 if (user == null) continue;
