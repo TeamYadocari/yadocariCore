@@ -28,13 +28,11 @@ namespace YadocariCore.Services
         private const string ApiEndPoint = "https://api.onedrive.com/v1.0";
         public readonly string ClientId;
         private readonly string _clientSecret;
-        private readonly string _serverUrl;
 
-        public OneDriveService(string clientId, string clientSecret, string serverUrl)
+        public OneDriveService(string clientId, string clientSecret)
         {
             ClientId = clientId;
             _clientSecret = clientSecret;
-            _serverUrl = serverUrl;
         }
 
         public class ShareInfo
@@ -50,7 +48,7 @@ namespace YadocariCore.Services
             public long FreeSpace { get; set; }
         }
 
-        public async Task<string> GetRefreshTokenAsync(string code)
+        public async Task<string> GetRefreshTokenAsync(string code, string serverUrl)
         {
             var url = "https://login.live.com/oauth20_token.srf";
             var hc = new HttpClient();
@@ -61,7 +59,7 @@ namespace YadocariCore.Services
                 {"client_secret", _clientSecret },
                 {"code", code },
                 {"grant_type", "authorization_code" },
-                {"redirect_uri", $"{_serverUrl}/Manage/AddMicrosoftAccountCallback" }
+                {"redirect_uri", $"{serverUrl}/Manage/AddMicrosoftAccountCallback" }
             });
 
             var response = await hc.PostAsync(url, param);

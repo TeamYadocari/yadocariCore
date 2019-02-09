@@ -63,7 +63,7 @@ namespace YadocariCore
             // Add application services.
             var oneDrive = Configuration.GetSection("OneDrive");
             //services.AddTransient<IEmailSender, EmailSender>();
-            services.AddSingleton(new OneDriveService(oneDrive["ClientId"], oneDrive["ClientSecret"], Configuration.GetSection("ApplicationConfig")["ServerUrl"]));
+            services.AddSingleton(new OneDriveService(oneDrive["ClientId"], oneDrive["ClientSecret"]));
             services.AddScoped<ConfigService>();
             services.Configure<ApplicationConfig>(Configuration.GetSection("ApplicationConfig"));
 

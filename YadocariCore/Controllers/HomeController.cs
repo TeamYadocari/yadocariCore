@@ -45,7 +45,7 @@ namespace YadocariCore.Controllers
         private readonly OneDriveDbContext _dbContext;
         private readonly ConfigService _configService;
 
-        public HomeController(UserManager<ApplicationUser> userManager, OneDriveService oneDrvieService, IOptions<ApplicationConfig> config, OneDriveDbContext dbContext, ConfigService configService)
+        public HomeController(UserManager<ApplicationUser> userManager, OneDriveService oneDrvieService, IOptionsSnapshot<ApplicationConfig> config, OneDriveDbContext dbContext, ConfigService configService)
         {
             _userManager = userManager;
             _oneDriveService = oneDrvieService;

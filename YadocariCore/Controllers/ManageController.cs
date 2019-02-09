@@ -46,7 +46,7 @@ namespace YadocariCore.Controllers
         private readonly OneDriveDbContext _dbContext;
         private readonly ConfigService _configService;
 
-        public ManageController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, OneDriveService oneDriveService, IOptions<ApplicationConfig> config, OneDriveDbContext dbContext, ConfigService configService)
+        public ManageController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, OneDriveService oneDriveService, IOptionsSnapshot<ApplicationConfig> config, OneDriveDbContext dbContext, ConfigService configService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -352,7 +352,7 @@ namespace YadocariCore.Controllers
         // GET: /Manage/AddMicrosoftAccountCallback
         public async Task<ActionResult> AddMicrosoftAccountCallback(string code)
         {
-            var refreshToken = await _oneDriveService.GetRefreshTokenAsync(code);
+            var refreshToken = await _oneDriveService.GetRefreshTokenAsync(code, _config.ServerUrl);
             var info = await _oneDriveService.GetOwnerInfoAsync(refreshToken);
 
             if (_dbContext.Accounts.Any(x => x.OneDriveId == info.Id))
