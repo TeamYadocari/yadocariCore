@@ -31,6 +31,12 @@ namespace YadocariCore.Models.Config
         public string ServerUrl { get; set; }
     }
 
+    public class OneDriveConfig
+    {
+        public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
+    }
+
     //from DB
     public class ApplicationDbConfig
     {

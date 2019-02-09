@@ -353,24 +353,28 @@ namespace YadocariCore.Controllers
         public async Task<ActionResult> AddMicrosoftAccountCallback(string code)
         {
             var refreshToken = await _oneDriveService.GetRefreshTokenAsync(code, _config.ServerUrl);
-            var info = await _oneDriveService.GetOwnerInfoAsync(refreshToken);
+            var info = await _oneDriveService.GetOwnerInfoByTokenAsync(refreshToken);
 
             if (_dbContext.Accounts.Any(x => x.OneDriveId == info.Id))
             {
-                ViewBag.Success = false;
-                return View();
+                //Update token
+                _dbContext.Accounts.First(x => x.OneDriveId == info.Id).RefleshToken = refreshToken;
+                _dbContext.SaveChanges();
             }
-            _dbContext.Accounts.Add(new Account
+            else
             {
-                Name = info.DisplayName,
-                OneDriveId = info.Id,
-                RefleshToken = refreshToken
-            });
-            _dbContext.SaveChanges();
+                _dbContext.Accounts.Add(new Account
+                {
+                    Name = info.DisplayName,
+                    OneDriveId = info.Id,
+                    RefleshToken = refreshToken
+                });
+                _dbContext.SaveChanges();
 
-            if (!_configService.ContainsKey("UsingMicrosoftAccountId"))
-            {
-                _configService.SetConfiguration("UsingMicrosoftAccountId", _dbContext.Accounts.First().Id);
+                if (!_configService.ContainsKey("UsingMicrosoftAccountId"))
+                {
+                    _configService.SetConfiguration("UsingMicrosoftAccountId", _dbContext.Accounts.First().Id);
+                }
             }
 
             ViewBag.Success = true;
@@ -401,18 +405,26 @@ namespace YadocariCore.Controllers
 
         public async Task<ActionResult> ManageMicrosoftAccounts()
         {
-            var model = new List<MicrosoftAccount>();
-
-            foreach (var a in _dbContext.Accounts)
-            {
-                model.Add(new MicrosoftAccount
+            var model = await Task.WhenAll(_dbContext.Accounts.ToArray().Select(async x =>
                 {
-                    Id = a.Id,
-                    Name = a.Name,
-                    FreeSpace = GetHumanReadableSize((await _oneDriveService.GetOwnerInfoAsync(a.RefleshToken)).FreeSpace),
-                    Using = _configService.GetConfiguration<int>("UsingMicrosoftAccountId") == a.Id
-                });
-            }
+                    string freeSpace;
+                    try
+                    {
+                        var info = await _oneDriveService.GetOwnerInfoAsync(x.Id);
+                        freeSpace = GetHumanReadableSize(info.FreeSpace);
+                    }
+                    catch
+                    {
+                        freeSpace = "トークン失効";
+                    }
+                    return new MicrosoftAccount
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Using = _configService.GetConfiguration<int>("UsingMicrosoftAccountId") == x.Id,
+                        FreeSpace = freeSpace
+                    };
+                }));
 
             return View(model);
         }

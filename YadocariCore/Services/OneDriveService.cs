@@ -18,8 +18,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using YadocariCore.Models;
+using YadocariCore.Models.Config;
 
 namespace YadocariCore.Services
 {
@@ -28,11 +30,13 @@ namespace YadocariCore.Services
         private const string ApiEndPoint = "https://api.onedrive.com/v1.0";
         public readonly string ClientId;
         private readonly string _clientSecret;
+        private readonly OneDriveDbContext _dbContext;
 
-        public OneDriveService(string clientId, string clientSecret)
+        public OneDriveService(IOptionsSnapshot<OneDriveConfig> config, OneDriveDbContext dbContext)
         {
-            ClientId = clientId;
-            _clientSecret = clientSecret;
+            ClientId = config.Value.ClientId;
+            _clientSecret = config.Value.ClientSecret;
+            _dbContext = dbContext;
         }
 
         public class ShareInfo
@@ -68,10 +72,14 @@ namespace YadocariCore.Services
             return dynamicResult.refresh_token;
         }
 
-        public async Task<OwnerInfo> GetOwnerInfoAsync(string refleshToken)
+        public async Task<OwnerInfo> GetOwnerInfoAsync(int accountNum)
         {
-            var token = await GetAccessTokenAsync(refleshToken);
+            var token = await GetAccessTokenAsync(accountNum);
+            return await GetOwnerInfoByTokenAsync(token);
+        }
 
+        public async Task<OwnerInfo> GetOwnerInfoByTokenAsync(string token)
+        {
             var url = ApiEndPoint + "/drive";
             var hc = new HttpClient();
             hc.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
@@ -87,8 +95,10 @@ namespace YadocariCore.Services
             };
         }
 
-        private async Task<string> GetAccessTokenAsync(string refleshToken)
+        private async Task<string> GetAccessTokenAsync(int accountNum)
         {
+            var refreshToken = _dbContext.Accounts.First(x => x.Id == accountNum).RefleshToken;
+
             var url = "https://login.live.com/oauth20_token.srf";
             var hc = new HttpClient();
 
@@ -96,14 +106,23 @@ namespace YadocariCore.Services
             {
                 {"client_id", ClientId },
                 {"client_secret", _clientSecret },
-                {"refresh_token", refleshToken },
+                {"refresh_token", refreshToken },
                 {"grant_type", "refresh_token" }
             });
 
             var response = await hc.PostAsync(url, param);
-            var result = await response.Content.ReadAsStringAsync();
-            var dynamicResult = JsonConvert.DeserializeObject<dynamic>(result);
-            return dynamicResult.access_token;
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var dynamicResult = JsonConvert.DeserializeObject<dynamic>(result);
+
+                _dbContext.Accounts.First(x => x.Id == accountNum).RefleshToken = dynamicResult.refresh_token;
+                _dbContext.SaveChanges();
+
+                return dynamicResult.access_token;
+            }
+
+            return null;
         }
 
         private async Task<string> UploadAsync(string token, string filename, Stream file)
@@ -207,10 +226,9 @@ namespace YadocariCore.Services
             var dynamicResult = JsonConvert.DeserializeObject<dynamic>(result);
         }
 
-        public async Task<string> UploadAsync(OneDriveDbContext dbContext, int accountNum, string filename, Stream file)
+        public async Task<string> UploadAsync(int accountNum, string filename, Stream file)
         {
-            var refreshToken = dbContext.Accounts.First(x => x.Id == accountNum).RefleshToken;
-            var token = await GetAccessTokenAsync(refreshToken);
+            var token = await GetAccessTokenAsync(accountNum);
             string fileId;
 
             if (file.Length < 100 * 1024 * 1024)
@@ -225,26 +243,23 @@ namespace YadocariCore.Services
             return fileId;
         }
 
-        public async Task<ShareInfo> CreateShareLinkAsync(OneDriveDbContext dbContext, int accountNum, string fileId)
+        public async Task<ShareInfo> CreateShareLinkAsync(int accountNum, string fileId)
         {
-            var refreshToken = dbContext.Accounts.First(x => x.Id == accountNum).RefleshToken;
-            var token = await GetAccessTokenAsync(refreshToken);
-            var shareinfo = await CreateShareLinkAsync(token, fileId);
+            var token = await GetAccessTokenAsync(accountNum);
+            var shareInfo = await CreateShareLinkAsync(token, fileId);
 
-            return shareinfo;
+            return shareInfo;
         }
 
-        public async Task DeleteShareLinkAsync(OneDriveDbContext dbContext, int accountNum, string fileId, string permissionId)
+        public async Task DeleteShareLinkAsync(int accountNum, string fileId, string permissionId)
         {
-            var refreshToken = dbContext.Accounts.First(x => x.Id == accountNum).RefleshToken;
-            var token = await GetAccessTokenAsync(refreshToken);
+            var token = await GetAccessTokenAsync(accountNum);
             await DeleteShareLinkAsync(token, fileId, permissionId);
         }
 
-        public async Task DeleteAsync(OneDriveDbContext dbContext, int accountNum, string fileId)
+        public async Task DeleteAsync(int accountNum, string fileId)
         {
-            var refreshToken = dbContext.Accounts.First(x => x.Id == accountNum).RefleshToken;
-            var token = await GetAccessTokenAsync(refreshToken);
+            var token = await GetAccessTokenAsync(accountNum);
             await DeleteAsync(token, fileId);
 
         }

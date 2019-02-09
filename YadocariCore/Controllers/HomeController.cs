@@ -57,7 +57,7 @@ namespace YadocariCore.Controllers
         private async Task DeleteShareLinkTask(int accountNum, string fileId, string permissionId)
         {
             await Task.Delay(TimeSpan.FromMinutes(_config.LinkEnableDuration));
-            await _oneDriveService.DeleteShareLinkAsync(_dbContext, accountNum, fileId, permissionId);
+            await _oneDriveService.DeleteShareLinkAsync(accountNum, fileId, permissionId);
         }
 
         private static List<Task> _tasks = new List<Task>(); //GCに消されないように保持しておく
@@ -317,15 +317,15 @@ namespace YadocariCore.Controllers
             try
             {
                 var accountId = _configService.GetConfiguration<int>("UsingMicrosoftAccountId");
-                var onedriveFileId = await _oneDriveService.UploadAsync(_dbContext, accountId, fileName, stream);
+                var onedriveFileId = await _oneDriveService.UploadAsync(accountId, fileName, stream);
 
                 if (_config.EnableAccountAutoChange)
                 {
-                    var currentAccount = await _oneDriveService.GetOwnerInfoAsync(_dbContext.Accounts.Find(accountId).RefleshToken);
+                    var currentAccount = await _oneDriveService.GetOwnerInfoAsync(accountId);
                     var threshold = _config.ChangeThreshold;
                     if ((double)currentAccount.FreeSpace / 1024 / 1024 < threshold)
                     {
-                        var preload = _dbContext.Accounts.Select(x => _oneDriveService.GetOwnerInfoAsync(x.RefleshToken));
+                        var preload = _dbContext.Accounts.Select(x => _oneDriveService.GetOwnerInfoAsync(x.Id));
                         await Task.WhenAll(preload);
                         var nextAccount = preload.Select(x => x.Result).FirstOrDefault(x => (double)x.FreeSpace / 1024 / 1024 >= threshold);
                         if (nextAccount != null) _configService.SetConfiguration("UsingMicrosoftAccountId", nextAccount.Id);
@@ -375,7 +375,7 @@ namespace YadocariCore.Controllers
 
             file.DownloadCount++;
             _dbContext.SaveChanges();
-            var shareInfo = await _oneDriveService.CreateShareLinkAsync(_dbContext, file.MicrosoftAccountId, file.OneDriveFileId);
+            var shareInfo = await _oneDriveService.CreateShareLinkAsync(file.MicrosoftAccountId, file.OneDriveFileId);
             _tasks.Add(DeleteShareLinkTask(file.MicrosoftAccountId, file.OneDriveFileId, shareInfo.PermissionId));
             _tasks = _tasks.Where(x => !x.IsCompleted || !x.IsCanceled || !x.IsFaulted).ToList(); //完了済みのものを取り除く
             return Redirect(shareInfo.Url);
@@ -397,7 +397,7 @@ namespace YadocariCore.Controllers
 
             if (string.IsNullOrEmpty(file.OneDriveFileId)) return View("Error");
 
-            await _oneDriveService.DeleteAsync(_dbContext, file.MicrosoftAccountId, file.OneDriveFileId);
+            await _oneDriveService.DeleteAsync(file.MicrosoftAccountId, file.OneDriveFileId);
             file.MicrosoftAccountId = -1;
             file.OneDriveFileId = null;
             await _dbContext.SaveChangesAsync();

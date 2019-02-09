@@ -60,12 +60,13 @@ namespace YadocariCore
             services.AddDbContext<ConfigurationContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
-            // Add application services.
-            var oneDrive = Configuration.GetSection("OneDrive");
-            //services.AddTransient<IEmailSender, EmailSender>();
-            services.AddSingleton(new OneDriveService(oneDrive["ClientId"], oneDrive["ClientSecret"]));
-            services.AddScoped<ConfigService>();
             services.Configure<ApplicationConfig>(Configuration.GetSection("ApplicationConfig"));
+            services.Configure<OneDriveConfig>(Configuration.GetSection("OneDrive"));
+
+            // Add application services.
+            //services.AddTransient<IEmailSender, EmailSender>();
+            services.AddScoped<OneDriveService>();
+            services.AddScoped<ConfigService>();
 
             services.AddMvc();
 

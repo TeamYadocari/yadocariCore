@@ -1,4 +1,4 @@
-﻿@model List<YadocariCore.Controllers.ManageController.MicrosoftAccount>
+﻿@model YadocariCore.Controllers.ManageController.MicrosoftAccount[]
 
 @{
 	ViewBag.Title = "Microsoftアカウントの管理";
@@ -69,4 +69,5 @@
 	</table>
 }
 <h4>新規アカウント</h4>
+<h5 class="text-info">※アクセストークンが失効したアカウントの再認証も下のボタンから行ってください．</h5>
 @Html.ActionLink("新規Microsoftアカウントを追加する", "AddMicrosoftAccount", "Manage", null, new { @class = "btn btn-default" })
