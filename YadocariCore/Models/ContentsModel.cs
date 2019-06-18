@@ -32,9 +32,7 @@ namespace YadocariCore.Models
         }
 
         public int Id { get; set; }
-        //[Index(IsUnique = true)]
         public int DocumentId { get; set; }
-        //[Index(IsUnique = true)]
         [StringLength(256)]
         public string DocumentName { get; set; }
         public int MicrosoftAccountId { get; set; }
@@ -45,7 +43,6 @@ namespace YadocariCore.Models
     public class Account
     {
         public int Id { get; set; }
-        //[Index(IsUnique = true)]
         [StringLength(256)]
         public string OneDriveId { get; set; }
         public string Name { get; set; }
@@ -59,6 +56,8 @@ namespace YadocariCore.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<File>()
                 .HasIndex(f => new { f.DocumentId, f.DocumentName }).IsUnique();
             modelBuilder.Entity<Account>()

@@ -29,5 +29,13 @@ namespace YadocariCore.Models
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(f => new { f.FileId }).IsUnique();
+        }
     }
 }
