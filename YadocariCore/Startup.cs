@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using YadocariCore.Models;
 using YadocariCore.Models.Config;
 using YadocariCore.Services;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace YadocariCore
 {
@@ -62,6 +63,7 @@ namespace YadocariCore
 
             services.Configure<ApplicationConfig>(Configuration.GetSection("ApplicationConfig"));
             services.Configure<OneDriveConfig>(Configuration.GetSection("OneDrive"));
+            services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = long.MaxValue);
 
             // Add application services.
             //services.AddTransient<IEmailSender, EmailSender>();

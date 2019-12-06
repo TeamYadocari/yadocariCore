@@ -32,6 +32,7 @@ using File = YadocariCore.Models.File;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using YadocariCore.Models.Config;
+using Microsoft.AspNetCore.Http;
 
 namespace YadocariCore.Controllers
 {
@@ -278,7 +279,7 @@ namespace YadocariCore.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = nameof(Role.Administrator) + ", " + nameof(Role.Upload))]
-        public async Task<ActionResult> Upload(int fileId)
+        public async Task<ActionResult> Upload(int fileId, [FromForm] IFormFile file)
         {
             //許可された拡張子
             var allowedExtentions = new[]
@@ -295,22 +296,21 @@ namespace YadocariCore.Controllers
             ViewBag.success = false;
 
             //ファイルが無い
-            if (Request.Form.Files.Count <= 0) return View("Error");
-            var fileData = Request.Form.Files[0];
-            if (fileData?.FileName == null || fileData.Length <= 0) return View("Error");
+            if (file == null) return View("Error");
+            if (file?.FileName == null || file.Length <= 0) return View("Error");
 
             //許可された拡張子ではない
-            if (allowedExtentions.All(ext => Path.GetExtension(fileData.FileName).ToLower() != ext))
+            if (allowedExtentions.All(ext => Path.GetExtension(file.FileName).ToLower() != ext))
             {
                 return View("UploadFinished");
             }
 
             //ファイル名は"UnixTime_元のファイル名"
-            var fileName = $"{GetUnixTime(DateTime.Now)}_{Path.GetFileName(fileData.FileName)}";
+            var fileName = $"{GetUnixTime(DateTime.Now)}_{Path.GetFileName(file.FileName)}";
             var tempFileName = Path.GetTempFileName();
             using (var inputStream = new FileStream(tempFileName, FileMode.Create))
             {
-                await fileData.CopyToAsync(inputStream);
+                await file.CopyToAsync(inputStream);
             }
             var stream = new FileStream(tempFileName, FileMode.Open, FileAccess.Read, FileShare.None, 8, FileOptions.DeleteOnClose);
 
@@ -344,12 +344,12 @@ namespace YadocariCore.Controllers
                     fileId = user.FileId;
                 }
 
-                var file = _dbContext.Files.Find(fileId);
+                var registeredFile = _dbContext.Files.Find(fileId);
                 //既に登録済みのタイトルである
-                if (!string.IsNullOrEmpty(file.OneDriveFileId)) return View("Error");
+                if (!string.IsNullOrEmpty(registeredFile.OneDriveFileId)) return View("Error");
 
-                file.MicrosoftAccountId = accountId;
-                file.OneDriveFileId = onedriveFileId;
+                registeredFile.MicrosoftAccountId = accountId;
+                registeredFile.OneDriveFileId = onedriveFileId;
                 await _dbContext.SaveChangesAsync();
             }
             catch (Exception)
